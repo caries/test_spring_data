@@ -10,20 +10,19 @@ import java.util.Scanner;
  */
 public class Main {
     public static void main(String[] args) {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+        try (ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("beans.xml")) {
+            JmsTemplate sender = context.getBean("jmsProducerTemplate", JmsTemplate.class);
+            if (sender == null) {
+                System.out.println("Sender is not loaded");
+                return;
+            }
 
-        JmsTemplate sender = context.getBean("jmsProducerTemplate", JmsTemplate.class);
-        if (sender == null) {
-            System.out.println("Sender is not loaded");
+            sender.send(session -> session.createTextMessage("Hola!!!"));
+
+            System.out.println("Please press ENTER to quit...");
+            try(Scanner scanner = new Scanner(System.in)) {
+                scanner.nextLine();
+            }
         }
-
-        sender.send(session -> session.createTextMessage("Hola!!!"));
-
-        System.out.println("Please press ENTER to quit...");
-        try(Scanner scanner = new Scanner(System.in)) {
-            scanner.nextLine();
-        }
-
-        context.close();
     }
 }
